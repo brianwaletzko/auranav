@@ -100,7 +100,7 @@ choices should be expected to need a pass. The M6 test matrix is where portrayal
 - [x] Drop a range-and-bearing mark by long press, showing range in nautical miles and true
       bearing from the current fix, refreshed on every GPS read, and removable from its popup.
 
-Acceptance: automated tests cover each location state; the geolocation watch runs while follow mode or track recording needs it and is released once neither does; turning off the track stops sampling and hides the line; a location failure stops recording visibly instead of logging nothing.
+Acceptance: automated tests cover each location state; the geolocation watch runs while follow mode or track recording needs it and is released once neither does; the track remains above chart layers after pan, zoom, and cell changes, with GPS above the track; turning off the track stops sampling and hides the line; a location failure stops recording visibly instead of logging nothing.
 
 ### M4: Offline installation
 

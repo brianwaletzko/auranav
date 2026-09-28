@@ -7,6 +7,8 @@ import { addDemoChartLayers, addPackageChartLayers, contourLabelExpression } fro
 import { landLabelFilter } from "./land";
 import { ANCHORING_PROHIBITED_PATTERN_ID, landmarkImageId } from "./chart-symbols";
 import { LIGHT_FLARE_PIXEL_RATIO, lightFlareIconExpression } from "./light-icon";
+import { addTrackLayer, TRACK_CASING_LAYER_ID, TRACK_LINE_LAYER_ID } from "./track-layer";
+import { addPositionLayer, POSITION_ACCURACY_LAYER_ID, POSITION_FIX_LAYER_ID } from "./position-layer";
 
 describe("package chart layers", () => {
   it("adds cells lazily and hides previously selected cells", () => {
@@ -73,6 +75,57 @@ describe("package chart layers", () => {
       ["chart-coastline-1", "position-accuracy"],
     ]);
     expect(layers.coverageCellNamesAtCenter()).toEqual(["US5BBBBB"]);
+  });
+
+  it("keeps the track above charts and restricted areas when views change or cells load", () => {
+    const layerOrder: string[] = [];
+    const insertLayer = (id: string, beforeId?: string): void => {
+      const beforeIndex = beforeId === undefined ? layerOrder.length : layerOrder.indexOf(beforeId);
+      if (beforeIndex < 0) throw new Error(`Missing layer ${beforeId}`);
+      layerOrder.splice(beforeIndex, 0, id);
+    };
+    const map = chartMap();
+    vi.mocked(map.addLayer).mockImplementation((layer, beforeId) => {
+      insertLayer(layer.id, beforeId);
+      return map;
+    });
+    vi.mocked(map.moveLayer).mockImplementation((id, beforeId) => {
+      const index = layerOrder.indexOf(id);
+      if (index < 0) throw new Error(`Missing layer ${id}`);
+      layerOrder.splice(index, 1);
+      insertLayer(id, beforeId);
+      return map;
+    });
+    vi.mocked(map.getLayer).mockImplementation((id) =>
+      (layerOrder.includes(id) ? { id } : undefined) as ReturnType<MapLibreMap["getLayer"]>);
+    const chartManifest = manifest();
+    chartManifest.tileSets = chartManifest.tileSets.map((tileSet) => ({
+      ...tileSet,
+      layers: ["coverage", "coastline", "restricted-area", "restricted-area-edge"],
+    }));
+    const layers = addPackageChartLayers(map, chartManifest, new URL("https://example.test/charts/manifest.json"));
+
+    // Match startup: the initial cells load before the track and GPS overlays.
+    layers.showCells(["US4AAAAA"]);
+    addTrackLayer(map);
+    addPositionLayer(map);
+    const expectOverlayOrder = (): void => {
+      expect(layerOrder.slice(-4)).toEqual([
+        TRACK_CASING_LAYER_ID, TRACK_LINE_LAYER_ID, POSITION_ACCURACY_LAYER_ID, POSITION_FIX_LAYER_ID,
+      ]);
+      const lastChartContent = Math.max(...layerOrder.map((id, index) =>
+        id.startsWith("chart-") && !id.startsWith("chart-restricted-area-") ? index : -1));
+      for (const [index, id] of layerOrder.entries()) {
+        if (id.startsWith("chart-restricted-area-")) expect(index).toBeGreaterThan(lastChartContent);
+      }
+    };
+    expectOverlayOrder();
+
+    // GPS following or panning reapplies the same cells; zooming can add a cell.
+    for (const cells of [["US4AAAAA"], ["US4AAAAA", "US5BBBBB"], ["US5BBBBB"], ["US4AAAAA", "US5BBBBB"]]) {
+      layers.showCells(cells);
+      expectOverlayOrder();
+    }
   });
 
   it("defers exact coverage status until every visible mask source is loaded", () => {

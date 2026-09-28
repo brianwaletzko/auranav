@@ -11,6 +11,7 @@ import {
   demoSoundings,
 } from "./demo-chart";
 import { POSITION_ACCURACY_LAYER_ID, POSITION_FIX_LAYER_ID } from "./position-layer";
+import { TRACK_CASING_LAYER_ID } from "./track-layer";
 import { landLabelFilter } from "./land";
 import { AREA_FEATURE, LINE_FEATURE, POINT_FEATURE } from "./feature-popup";
 import { createPopupDispatcher, type PopupDispatcher } from "./popup-dispatcher";
@@ -177,7 +178,7 @@ export function addPackageChartLayers(
     showCells(cellNames) {
       const visibleCells = new Set(cellNames);
       visibleCellNames = visibleCells;
-      const beforeId = positionLayerId(map);
+      const beforeId = navigationOverlayLayerId(map);
       // Coarser cells stay rendered beneath the selected band and name the same
       // islands, so only the finest visible band may label a landform.
       const finestBand = Math.max(...cellNames.map((cellName) => usageBands.get(cellName) ?? 0));
@@ -235,7 +236,7 @@ export function addPackageChartLayers(
       // coarser one than the harbour cell you are looking at. Left inside its
       // cell's group it is painted over by the finer cell's opaque coverage while
       // still answering clicks, so the same area looks different depending on
-      // which cell overlays it. Hoist it clear of every cell, below GPS.
+      // which cell overlays it. Hoist it clear of every cell, below the track and GPS.
       added.forEach((layerIds) => layerIds
         .filter((layerId) => layerId.startsWith(RESTRICTED_AREA_LAYER_PREFIX))
         .forEach((layerId) => map.moveLayer(layerId, beforeId)));
@@ -1542,7 +1543,10 @@ function lightLabelExpression(): ExpressionSpecification {
   ];
 }
 
-function positionLayerId(map: MapLibreMap): string | undefined {
+function navigationOverlayLayerId(map: MapLibreMap): string | undefined {
+  // The track is added before GPS. Keep both its casing and yellow line above
+  // opaque chart fills whenever cells are added or reordered after a move.
+  if (map.getLayer(TRACK_CASING_LAYER_ID)) return TRACK_CASING_LAYER_ID;
   if (map.getLayer(POSITION_ACCURACY_LAYER_ID)) return POSITION_ACCURACY_LAYER_ID;
   if (map.getLayer(POSITION_FIX_LAYER_ID)) return POSITION_FIX_LAYER_ID;
   return undefined;
