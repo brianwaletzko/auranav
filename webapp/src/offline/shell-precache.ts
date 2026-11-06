@@ -26,7 +26,9 @@ export function injectShellBuild(source: string, buildId: string, urls: readonly
   for (const token of [BUILD_ID_PLACEHOLDER, PRECACHE_PLACEHOLDER]) {
     if (!source.includes(token)) throw new Error(`service-worker.js no longer contains ${token}`);
   }
+  // Function replacers insert the values verbatim; a string replacement would treat
+  // "$&" and similar sequences in a file name as patterns.
   return source
-    .replaceAll(BUILD_ID_PLACEHOLDER, buildId)
-    .replace(PRECACHE_PLACEHOLDER, JSON.stringify(urls));
+    .replaceAll(BUILD_ID_PLACEHOLDER, () => buildId)
+    .replace(PRECACHE_PLACEHOLDER, () => JSON.stringify(urls));
 }

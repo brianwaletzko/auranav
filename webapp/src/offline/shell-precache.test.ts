@@ -35,6 +35,11 @@ describe("injectShellBuild", () => {
       .toBe(`const SHELL_CACHE = "shell-1234";\nconst BUILD_ASSETS = ["./assets/a.js"];`);
   });
 
+  it("inserts the list verbatim when a URL contains replacement patterns", () => {
+    expect(injectShellBuild(source, "1234", ["./$&.js", "./$'.js"]))
+      .toBe(`const SHELL_CACHE = "shell-1234";\nconst BUILD_ASSETS = ["./$&.js","./$'.js"];`);
+  });
+
   it("fails the build when a token is missing", () => {
     expect(() => injectShellBuild("const SHELL_CACHE = 'x';", "1234", [])).toThrow("__BUILD_ID__");
     expect(() => injectShellBuild("__BUILD_ID__", "1234", [])).toThrow("__PRECACHE_URLS__");
