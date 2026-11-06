@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#092a3b" />
+    <meta name="description" content="An offline-ready recreational viewer for NOAA electronic navigation chart data." />
+    <meta name="apple-mobile-web-app-title" content="AuraNav" />
+    <link rel="icon" href="/auranav/app-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/auranav/app-icon-192.png" />
+    <link rel="manifest" href="/auranav/manifest.webmanifest" />
+    <title>AuraNav — Wisconsin Nautical Charts</title>
+    <script type="module" crossorigin src="/auranav/assets/index-Bx5b31T7.js"></script>
+    <link rel="stylesheet" crossorigin href="/auranav/assets/index-tnWmFFxA.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <button
+          id="drawer-toggle"
+          class="drawer-toggle"
+          type="button"
+          aria-label="Chart and offline menu"
+          aria-expanded="false"
+          aria-controls="drawer"
+        >
+          <span class="drawer-toggle-glyph" aria-hidden="true">☰</span>
+          <span>Charts</span>
+          <span id="drawer-alert" class="drawer-alert" aria-hidden="true" hidden>!</span>
+        </button>
+        <div>
+          <p class="eyebrow">Wisconsin waters</p>
+          <h1>AuraNav</h1>
+        </div>
+        <p class="disclaimer">For informational use only. Not for navigation.</p>
+      </header>
+
+      <section class="map-shell" aria-label="Electronic navigation chart">
+        <div id="map" class="map" role="application" aria-label="Interactive nautical chart. Use arrow keys to pan and plus or minus to zoom."></div>
+        <nav id="map-controls" class="map-controls" aria-label="Map controls"></nav>
+        <div id="north-indicator" class="north-indicator"></div>
+        <div id="scale-bar" class="scale-bar" aria-hidden="true"></div>
+        <section id="scale-status" class="scale-status" role="status" aria-live="polite" hidden></section>
+        <div class="status-stack">
+          <section
+            id="range-bearing-status"
+            class="range-bearing-status"
+            aria-label="Range and bearing to your mark"
+            role="status"
+            aria-live="polite"
+            hidden
+          ></section>
+          <section id="location-status" class="location-status" role="status" aria-live="polite"></section>
+        </div>
+        <div id="drawer-scrim" class="drawer-scrim" hidden></div>
+        <aside id="drawer" class="drawer" aria-label="Chart and offline menu" inert>
+          <div class="drawer-bar">
+            <h2>Charts</h2>
+            <button id="drawer-close" class="drawer-close" type="button" aria-label="Close menu">✕</button>
+          </div>
+          <div class="drawer-body">
+            <section id="chart-status" class="chart-status" aria-label="Chart information"></section>
+            <section id="offline-panel" class="offline-panel" aria-label="Offline chart storage"></section>
+            <section id="track-settings" class="settings-panel" aria-label="Track recording"></section>
+            <section id="display-settings" class="settings-panel" aria-label="Display settings"></section>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>
